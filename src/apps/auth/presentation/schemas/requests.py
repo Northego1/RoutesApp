@@ -1,16 +1,18 @@
 from pydantic import BaseModel, EmailStr
 
 
-class LoginRequestSchema(BaseModel):
+class LoginRequest(BaseModel):
     username: str
     password: str
 
 
-class RegisterRequestSchema(LoginRequestSchema):
-    email: EmailStr
+class RegisterRequest(LoginRequest):
+    email: EmailStr | None = None
 
 
-class UpdateUserRequestSchema(BaseModel):
+class UpdateUserRequest(BaseModel):
     username: str | None = None
     email: EmailStr | None = None
     password: str | None = None
+
+

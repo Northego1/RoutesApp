@@ -11,11 +11,11 @@ class UserNotFoundResponse(BaseModel):
 
 class RegisterResponse(BaseModel):
     username: str
-    email: EmailStr
+    access_jwt: str
 
 
 class LoginResponse(BaseModel):
-    refresh_jwt: str
+    access_jwt: str
 
 
 class GetUserResponse(RegisterResponse):

@@ -1,8 +1,7 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import ValidationError
 
 from api.v1 import router
 from container import Container
@@ -38,6 +37,20 @@ async def handle_validation_error(
             status=schema.Status.FAILURE,
             detail=exc.errors(),
         ),
+    )
+
+
+@app.exception_handler(HTTPException)
+async def auth_exception_handler(
+    _: Request,
+    exc: HTTPException,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=schema.ApiResponse(
+            status=schema.Status.FAILURE,
+            detail=exc.detail,
+        ).model_dump(),
     )
 
 if __name__ == "__main__":

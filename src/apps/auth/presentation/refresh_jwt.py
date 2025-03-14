@@ -1,25 +1,42 @@
-from typing import Annotated, Self
+from typing import Self
 
-from fastapi import Depends
+from fastapi import HTTPException, Request
 
-from api.v1 import protocols
+from apps.auth.presentation import protocols as proto
+from apps.auth.presentation.schemas.responses import RefreshAccessJwtResponse
+from core.exceptions import BaseError
+from core.schema import ApiResponse, Status
 
 
 class RefreshController:
-    def __init__(self) -> None:
-        pass
+    def __init__(
+            self: Self,
+            refresh_jwt_usecase: proto.RefreshJwtUsecaseProtocol,
+    ) -> None:
+        self.refresh_uc = refresh_jwt_usecase
 
 
-    async def refresh(self: Self):
-        ...
+    async def refresh(
+            self: Self,
+            request: Request,
+    ) -> ApiResponse[RefreshAccessJwtResponse, None]:
+        try:
+            refresh_token = request.cookies.get("refresh_jwt")
+            if not refresh_token:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Refresh token not found",
+                )
+            response = await self.refresh_uc.execute(refresh_token)
+            return ApiResponse(
+                status=Status.SUCCESS,
+                data=RefreshAccessJwtResponse(
+                    access_jwt=response.access_jwt,
+                ),
+            )
+        except BaseError as e:
+            raise HTTPException(  # noqa: B904
+                status_code=e.status_code,
+                detail=e.detail,
+            )
 
-
-
-async def get_refresh_controller() -> RefreshController:
-    return RefreshController()
-
-
-refresh_controller = Annotated[
-    protocols.RefreshJwtControllerProtocol,
-    Depends(get_refresh_controller),
-]

@@ -1,34 +1,33 @@
 import contextlib
 import dataclasses
-from typing import AsyncGenerator, Protocol, Self
+from typing import AsyncGenerator, Self
 
+from sqlalchemy.ext.asyncio import AsyncConnection
+
+from apps.auth.infrastructure.repositories.refresh_jwt_repository import RefreshJwtRepository
+from apps.auth.infrastructure.repositories.user_repository import UserRepository
 from core.database import DataBase
-
-
-class SessionProtocol(Protocol):
-    async def commit(self: Self) -> None: ...
-    async def rollback(self: Self) -> None: ...
-    async def close(self: Self) -> None: ...
 
 
 @dataclasses.dataclass(slots=True)
 class Repository:
-    _conn: SessionProtocol
-    # _notifications: Notifications | None = None
-    # _owners: Owners | None = None
+    _conn: AsyncConnection
+
+    _user_repository: UserRepository | None = None
+    _refresh_repository: RefreshJwtRepository | None = None
 
 
-    # @property
-    # def notifications(self: Self) -> Notifications:
-    #     if self._notifications is None:
-    #         self._notifications = Notifications()
-    #     return self._notifications
+    @property
+    def user_repository(self: Self) -> UserRepository:
+        if not self._user_repository:
+            self._user_repository = UserRepository(self._conn)
+        return self._user_repository
 
-    # @property
-    # def owners(self: Self) -> Owners:
-    #     if self._owners is None:
-    #         self._owners = Owners()
-    #     return self._owners
+    @property
+    def refresh_repository(self: Self) -> RefreshJwtRepository:
+        if not self._refresh_repository:
+            self._refresh_repository = RefreshJwtRepository(self._conn)
+        return self._refresh_repository
 
 
 class UnitOfWork:
@@ -42,10 +41,12 @@ class UnitOfWork:
         conn.begin()
         try:
             yield Repository(conn)
-        except Exception:
-            await conn.rollback()
+        except Exception as e:
+            raise e
+            # await conn.rollback()
         else:
             await conn.commit()
         finally:
             await conn.aclose()
+
 

@@ -1,24 +1,17 @@
-from typing import Annotated, Self
+from typing import Self
 
-from fastapi import Depends
-
-from api.v1 import protocols
+from apps.auth.presentation import protocols as proto
 
 
 class UpdateUserController:
-    def __init__(self: Self) -> None:
-        ...
+    def __init__(
+            self: Self,
+            update_usecase: proto.UpdateUsecaseProtocol,
+    ) -> None:
+        self.update_uc = update_usecase
+
 
     async def update_user(self: Self):
         ...
 
 
-
-async def get_update_controller() -> UpdateUserController:
-    return UpdateUserController()
-
-
-update_controller = Annotated[
-    protocols.UpdateUserControllerProtocol,
-    Depends(get_update_controller)
-]

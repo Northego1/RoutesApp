@@ -1,16 +1,41 @@
+from enum import Enum
+from pathlib import Path
 from typing import Self
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+class JwtType(str, Enum):
+    ACCESS = "ACCESS"
+    REFRESH = "REFRESH"
 
 
 class CustomSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
-class DataBase(CustomSettings):
+class JwtSettings(CustomSettings):
+    ACCESS_JWT_EXPIRE: int = 10  # minutes
+    REFRESH_JWT_EXPIRE: int = 43200 # minutes (30 days)
+
+    ALGORITHM: str = "RS256"
+
+    PRIVATE_KEY: str = (
+        BASE_DIR / "jwt_certs" / "jwt-private.pem"
+    ).read_text()
+
+    PUBLIC_KEY: str = (
+        BASE_DIR / "jwt_certs" / "jwt-public.pem"
+    ).read_text()
+
+
+
+class DataBaseSettings(CustomSettings):
     DB_USER: str = "postgres"
-    DB_PASS: str = "postgres"
-    DB_NAME: str = "postgres"
+    DB_PASS: str = "0420"
+    DB_NAME: str = "routes"
     DB_HOST : str = "localhost"
     DB_PORT: str = "5432"
 
@@ -28,9 +53,23 @@ class DataBase(CustomSettings):
         )
 
 
+class AuthBussinesSettings(CustomSettings):
+    MIN_USERNAME_LENGTH: int = 3
+
+    MIN_PASSWORD_LENGTH: int = 3
+    REQUIRED_UPPER_SYM: bool = False
+    REQIRED_LOWER_SYM: bool = False
+    REQUIRED_SPEC_SYM: bool = False
+    REQUIRED_DIGIT: bool = False
+
+    MAX_NUM_OF_REFRESH_JWT: int = 5
+
+
 class Settings:
     def __init__(self: Self) -> None:
-        self.db = DataBase()
+        self.db = DataBaseSettings()
+        self.auth = AuthBussinesSettings()
+        self.jwt = JwtSettings()
 
 
 settings = Settings()
