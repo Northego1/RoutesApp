@@ -1,6 +1,6 @@
 
 import uuid
-from typing import Self, overload
+from typing import Self
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
@@ -12,47 +12,37 @@ class UserRepository:
     def __init__(self: Self, conn: AsyncConnection) -> None:
         self.conn = conn
 
-    async def _get_user_by_with_tokens(
-            self: Self, parametr: str | uuid.UUID,
-    ) -> User | None:
-        param_name = "id" if isinstance(parametr, uuid.UUID) else "username"
+
+    async def get_user_by_id(self: Self, user_id: uuid.UUID) -> User | None:
         query = await self.conn.execute(
             text(
-                f"""
-                    SELECT us.*, json_agg(rj.*)
-                    FROM users us
-                    JOIN refresh_jwts rj
-                    ON us.id = rj.user_id
-                    WHERE us.{param_name} = :parametr
-                    GROUP BY us.id;
-                """,  # noqa: S608
-            ),
-            {
-                "parametr": parametr,
-            },
-        )
-
-        row = query.fetchone()
-        if not row:
-            return None
-        return User(*row)
-
-
-    async def _get_user_by(
-            self: Self, parametr: str | uuid.UUID,
-    ) -> User | None:
-        param_name = "id" if isinstance(parametr, uuid.UUID) else "username"
-
-        query = await self.conn.execute(
-            text(
-                f"""
+                """
                     SELECT *
                     FROM users
-                    WHERE {param_name} = :parametr
-                """,  # noqa: S608
+                    WHERE id = :user_id
+                """,
             ),
             {
-                "parametr": parametr,
+                "user_id": user_id,
+            },
+        )
+        row = query.fetchone()
+        if not row:
+            return None
+        return User(*row)
+
+
+    async def get_user_by_username(self: Self, username: str) -> User | None:
+        query = await self.conn.execute(
+            text(
+                """
+                    SELECT *
+                    FROM users
+                    WHERE username = :username
+                """,
+            ),
+            {
+                "username": username,
             },
         )
 
@@ -60,34 +50,6 @@ class UserRepository:
         if not row:
             return None
         return User(*row)
-
-    @overload
-    async def get_user(
-        self: Self, *, user_id: uuid.UUID, with_tokens: bool = False,
-    ) -> User | None: ...
-
-    @overload
-    async def get_user(
-        self: Self, *, username: str, with_tokens: bool = False,
-    ) -> User | None: ...
-
-
-    async def get_user(
-            self: Self,
-            *,
-            user_id: uuid.UUID | None = None,
-            username: str | None = None,
-            with_tokens: bool = False,
-    ) -> User | None:
-        if user_id:
-            parametr = user_id
-        elif username:
-            parametr = username
-        else:
-            raise Exception
-        if with_tokens:
-            return await self._get_user_by_with_tokens(parametr=parametr)
-        return await self._get_user_by(parametr=parametr)
 
 
     async def create_user(self: Self, user: User) -> None | uuid.UUID:
@@ -109,6 +71,29 @@ class UserRepository:
         )
 
         return query.scalar()
+
+
+    async def get_user_with_tokens(self: Self, username: str) -> User | None:
+        query = await self.conn.execute(
+            text(
+                """
+                SELECT us.*, json_agg(rj.*)
+                FROM users us
+                JOIN refresh_jwts rj
+                ON us.id = rj.user_id
+                WHERE us.username = :username
+                GROUP BY us.id;
+                """,
+            ),
+            {
+                "username": username,
+            },
+        )
+
+        row = query.fetchone()
+        if not row:
+            return None
+        return User(*row)
 
 
     async def update_user(self: Self, user: User) -> None:
