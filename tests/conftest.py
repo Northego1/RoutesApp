@@ -4,9 +4,18 @@ from typing import Literal
 import pytest
 
 from container import Container
+from core.config import JwtType
 
 
-class Response:
+class RequestMock:
+    def __init__(self, token: str | None = None) -> None:
+        self.headers = {}
+        self.cookies = {}
+        if token:
+            self.cookies[JwtType.REFRESH.value] = token
+
+
+class ResponseMock:
     def __init__(self) -> None:
         self.cookie_setted = False
 
@@ -38,10 +47,13 @@ class Response:
 
 
 @pytest.fixture(scope="function")
-def response() -> Response:
-    return Response()
+def response() -> ResponseMock:
+    return ResponseMock()
 
 
 @pytest.fixture(scope="session")
 def container() -> Container:
     return Container()
+
+
+

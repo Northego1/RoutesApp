@@ -3,19 +3,21 @@ from typing import Protocol, Self
 
 from apps.auth.application import protocols as proto
 from apps.auth.application.dto import UserLoginDto
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 from apps.auth.domain.user import User
 from core.config import JwtType
 from core.exceptions import BaseError
 
 
 class UserRepositoryProtocol(Protocol):
-    async def get_user_with_tokens(self: Self, username: str) -> User | None: ...
+        async def get_user_by_username(
+            self: Self, username: str, with_tokens: bool = False,
+    ) -> User | None: ...
 
 class RefreshJwtRepositoryProtocol(Protocol):
     async def update(
-            self: Self, older_token: RefreshJwt, new_token: RefreshJwt) -> None: ...
-    async def insert(self: Self, refresh_jwt: RefreshJwt) -> uuid.UUID | None: ...
+            self: Self, older_token: Token, new_token: Token) -> None: ...
+    async def insert(self: Self, refresh_jwt: Token) -> uuid.UUID | None: ...
 
 
 class RepositoryProtocol(Protocol):
@@ -24,7 +26,7 @@ class RepositoryProtocol(Protocol):
 
 
 class SecurityProtocol(Protocol):
-    def create_jwt(self: Self, user: User, jwt_type: str) -> RefreshJwt: ...
+    def create_jwt(self: Self, user: User, jwt_type: str) -> Token: ...
     def check_password(self: Self, correct_password: bytes, checkable_password: bytes) -> bool: ...
 
 
@@ -49,7 +51,7 @@ class LoginUsecase:
             creating tokens and returns dto with tokens
         """
         async with self.uow.transaction() as repo:
-            user = await repo.user_repository.get_user_with_tokens(username)
+            user = await repo.user_repository.get_user_by_username(username, with_tokens=True)
 
             if not user:
                 raise BaseError(detail="UserNotFound", status_code=404)

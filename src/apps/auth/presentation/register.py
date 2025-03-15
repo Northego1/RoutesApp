@@ -29,7 +29,7 @@ class RegisterController:
                 email=register_request.email,
             )
             response.set_cookie(
-                JwtType.REFRESH,
+                JwtType.REFRESH.value,
                 login_dto.refresh_jwt,
                 httponly=True,
                 samesite="strict",

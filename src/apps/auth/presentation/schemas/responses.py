@@ -18,9 +18,10 @@ class LoginResponse(BaseModel):
     access_jwt: str
 
 
-class GetUserResponse(RegisterResponse):
+class GetMeResponse(BaseModel):
     id: uuid.UUID
-    registred_at: datetime
+    username: str
+    email: str | None
 
 
 class RefreshAccessJwtResponse(BaseModel):

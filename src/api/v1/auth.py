@@ -52,13 +52,13 @@ async def refresh_jwt(
     return await cl.refresh(request)
 
 
-@router.get("/user/{user_id}", status_code=200)
+@router.get("/user", status_code=200)
 @inject
 async def get_user(
-        user_id: uuid.UUID,
-    cl: proto.GetUserControllerProtocol = Depends(Provide[Container.presentation.get_user]),
-) -> ApiResp[resp.GetUserResponse, None]:
-    return await cl.get_user(user_id)
+    request: Request,
+    cl: proto.GetUserControllerProtocol = Depends(Provide[Container.presentation.get_me]),
+) -> ApiResp[resp.GetMeResponse, None]:
+    return await cl.get_me(request)
 
 
 @router.post("/logout", status_code=204)

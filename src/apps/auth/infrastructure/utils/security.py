@@ -5,13 +5,13 @@ from typing import Self
 import bcrypt
 import jwt
 
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 from apps.auth.domain.user import User
 from core.config import JwtType, settings
 
 
 class Security:
-    def create_jwt(self: Self, user: User, jwt_type: JwtType) -> RefreshJwt:
+    def create_jwt(self: Self, user: User, jwt_type: JwtType) -> Token:
         """creating jwt token, extending jti, token_type, expire"""
         expire = settings.jwt.ACCESS_JWT_EXPIRE \
         if jwt_type == JwtType.ACCESS else settings.jwt.REFRESH_JWT_EXPIRE
@@ -21,8 +21,8 @@ class Security:
         payload = {
             "user_id": str(user.id),
             "username": user.username,
+            "type": jwt_type.value,
             "jti": str(jti),
-            "type": jwt_type,
             "exp": expire_at.timestamp(),
         }
 
@@ -31,18 +31,16 @@ class Security:
             key=settings.jwt.PRIVATE_KEY,
             algorithm=settings.jwt.ALGORITHM,
         )
-        return RefreshJwt(
+        return Token(
             id=payload["jti"],
             user_id=payload["user_id"],
             token=token,
             token_expire=expire_at,
+            type=jwt_type,
         )
 
 
-    def decode_and_verify_jwt(
-            self: Self,
-            token: str,
-) -> RefreshJwt | None:
+    def decode_and_verify_jwt(self: Self, token: str) -> Token | None:
         """ returns None if token is invalid"""
         try:
             payload = jwt.decode(
@@ -50,11 +48,12 @@ class Security:
                 key=settings.jwt.PUBLIC_KEY,
                 algorithms=[settings.jwt.ALGORITHM],
             )
-            return RefreshJwt(
+            return Token(
                 id=payload["jti"],
                 user_id=payload["user_id"],
                 token=token,
                 token_expire=datetime.fromtimestamp(int(payload["exp"]), tz=UTC),
+                type=payload["type"],
             )
         except jwt.exceptions.PyJWTError:
             return None

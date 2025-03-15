@@ -9,9 +9,9 @@ from core.schema import ApiResponse as ApiResp
 
 
 class GetUserControllerProtocol(Protocol):
-    async def get_user(
-            self: Self, user_id: uuid.UUID,
-    ) -> ApiResp[resp.GetUserResponse, None]: ...
+    async def get_me(
+            self: Self, request: Request,
+    ) -> ApiResp[resp.GetMeResponse, None]: ...
 
 
 class LoginControllerProtocol(Protocol):

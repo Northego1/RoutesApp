@@ -6,8 +6,9 @@ from apps.auth import presentation as pres
 class PresentationContainer(containers.DeclarativeContainer):
     usecases: providers.DependenciesContainer = providers.DependenciesContainer()
 
-    get_user = providers.Factory(
-        pres.GetUserController,
+    get_me = providers.Factory(
+        pres.GetMeController,
+        usecases.get_me_usecase,
     )
     login = providers.Factory(
         pres.LoginController,
@@ -22,6 +23,7 @@ class PresentationContainer(containers.DeclarativeContainer):
     )
     refresh_jwt = providers.Factory(
         pres.RefreshController,
+        usecases.refresh_jwt_usecase,
     )
     update = providers.Factory(
         pres.UpdateUserController,

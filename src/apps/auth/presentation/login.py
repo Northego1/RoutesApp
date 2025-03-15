@@ -29,7 +29,7 @@ class LoginController:
                 password=login_request.password,
             )
             response.set_cookie(
-                JwtType.REFRESH,
+                JwtType.REFRESH.value,
                 login_dto.refresh_jwt,
                 httponly=True,
                 samesite="strict",

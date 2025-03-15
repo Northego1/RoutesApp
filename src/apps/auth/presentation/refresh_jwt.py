@@ -4,6 +4,7 @@ from fastapi import HTTPException, Request
 
 from apps.auth.presentation import protocols as proto
 from apps.auth.presentation.schemas.responses import RefreshAccessJwtResponse
+from core.config import JwtType
 from core.exceptions import BaseError
 from core.schema import ApiResponse, Status
 
@@ -21,7 +22,7 @@ class RefreshController:
             request: Request,
     ) -> ApiResponse[RefreshAccessJwtResponse, None]:
         try:
-            refresh_token = request.cookies.get("refresh_jwt")
+            refresh_token = request.cookies.get(JwtType.REFRESH.value)
             if not refresh_token:
                 raise HTTPException(
                     status_code=401,

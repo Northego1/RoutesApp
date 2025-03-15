@@ -3,7 +3,7 @@ from typing import Any, Protocol, Self
 
 from apps.auth.application import protocols as proto
 from apps.auth.application.dto import UserRegisterDto
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 from apps.auth.domain.user import User
 from core.config import JwtType
 from core.exceptions import BaseError
@@ -16,7 +16,7 @@ class UserRepositoryProtocol(Protocol):
 
 
 class RefreshRepositoryProtocol(Protocol):
-    async def insert(self: Self, refresh_jwt: RefreshJwt) -> uuid.UUID | None: ...
+    async def insert(self: Self, refresh_jwt: Token) -> uuid.UUID | None: ...
 
 
 class RepositoryProtocol(Protocol):
@@ -25,7 +25,7 @@ class RepositoryProtocol(Protocol):
 
 
 class SecurityProtocol(Protocol):
-    def create_jwt(self: Self, user: User, jwt_type: str) -> RefreshJwt: ...
+    def create_jwt(self: Self, user: User, jwt_type: str) -> Token: ...
 
 
 class RegisterUsecase:

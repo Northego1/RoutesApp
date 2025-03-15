@@ -7,7 +7,7 @@ from apps.auth.presentation.schemas.requests import LoginRequest
 from container import Container
 from core.exceptions import BaseError
 from core.schema import ApiResponse, Status
-from tests.unit.test_auth import common as cm
+from tests.unit.test_auth.common import Mck
 from tests.unit.test_auth.mocks import usecases as uc
 
 
@@ -17,18 +17,18 @@ from tests.unit.test_auth.mocks import usecases as uc
     [
         (
             LoginRequest(
-                username=cm.login_request.username,
-                password=cm.login_request.password,
+                username=Mck.req.login_request.username,
+                password=Mck.req.login_request.password,
             ),
             ApiResponse(
                 status=Status.SUCCESS,
-                data=cm.login_response,
+                data=Mck.resp.login_response,
             ),
             None,
         ),
         (
             LoginRequest(
-                username=cm.login_request.username,
+                username=Mck.req.login_request.username,
                 password="wrong",  # noqa: S106
             ),
             None,
@@ -37,7 +37,7 @@ from tests.unit.test_auth.mocks import usecases as uc
         (
             LoginRequest(
                 username="wrong",
-                password=cm.login_request.password,
+                password=Mck.req.login_request.password,
             ),
             None,
             HTTPException,

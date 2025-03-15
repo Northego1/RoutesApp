@@ -1,4 +1,4 @@
-from apps.auth.presentation.get_user import GetUserController
+from apps.auth.presentation.get_me import GetMeController
 from apps.auth.presentation.login import LoginController
 from apps.auth.presentation.logout import LogoutController
 from apps.auth.presentation.refresh_jwt import RefreshController

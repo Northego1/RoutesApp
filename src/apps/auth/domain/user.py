@@ -1,17 +1,17 @@
 import uuid
-from typing import Protocol, Self
+from typing import Self
 
 import bcrypt
 
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 from core.config import settings as st
 from core.exceptions import BaseError
 
-SPEC_SYM = {
+SPEC_SYM = frozenset((
     "!", "@", "#", "$", "%", "^",
     "&", "*", "(", ")", "-", "_",
     "+", "=", ">", "<", "?", ":",
-}
+))
 
 class UserDomainError(BaseError): ...
 class ValidationError(UserDomainError): ...
@@ -24,7 +24,7 @@ class User:
             username: str,
             email: str | None,
             password: bytes | str,
-            token_list: list[RefreshJwt] | None = None,
+            token_list: list[Token] | None = None,
     ) -> None:
         self.id = id
         self.username = username
@@ -33,7 +33,7 @@ class User:
         self.token_list = token_list
 
 
-    def swapsert_jwt(self: Self, token: RefreshJwt) -> RefreshJwt | None:
+    def swapsert_jwt(self: Self, token: Token) -> Token | None:
         """
             Replace oldest_token if lenth of oldest_list > settings value
             else just append token into token_list

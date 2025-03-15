@@ -4,7 +4,7 @@ from apps.auth.application import dto
 
 
 class GetUserUsecaseProtocol(Protocol):
-    async def execute(self: Self): ...
+    async def execute(self: Self, access_token: str) -> dto.UserDto: ...
 
 class LoginUsecaseProtocol(Protocol):
     async def execute(

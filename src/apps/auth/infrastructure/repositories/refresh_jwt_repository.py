@@ -4,7 +4,7 @@ from typing import Self
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 
 
 class RefreshJwtRepository:
@@ -14,15 +14,15 @@ class RefreshJwtRepository:
 
     async def update(
             self: Self,
-            older_token: RefreshJwt,
-            new_token: RefreshJwt,
+            older_token: Token,
+            new_token: Token,
     )-> None | uuid.UUID:
         query = await self.conn.execute(
             text(
                 """
                     UPDATE refresh_jwts
                     SET
-                        id = :jti
+                        id = :jti,
                         user_id = :user_id,
                         token = :token,
                         token_expire = :token_expire
@@ -42,7 +42,7 @@ class RefreshJwtRepository:
         return query.scalar()
 
 
-    async def insert(self: Self, refresh_jwt: RefreshJwt) -> uuid.UUID | None:
+    async def insert(self: Self, refresh_jwt: Token) -> uuid.UUID | None:
         query = await self.conn.execute(
             text(
                 """

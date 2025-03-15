@@ -3,22 +3,25 @@ from typing import Any, Protocol, Self
 
 from apps.auth.application import protocols as proto
 from apps.auth.application.dto import RefreshJwtDto
-from apps.auth.domain.refresh_jwt import RefreshJwt
+from apps.auth.domain.token import Token
 from apps.auth.domain.user import User
 from core.config import JwtType
 from core.exceptions import BaseError
 
 
 class UserRepositoryProtocol(Protocol):
-    async def get_user_by_id(self: Self, user_id: uuid.UUID) -> User | None: ...
+    async def get_user_by_id(
+            self: Self, user_id: uuid.UUID, with_tokens: bool = False,
+    ) -> User | None: ...
 
 class RepositoryProtocol(Protocol):
     user_repository: UserRepositoryProtocol
 
 
 class SecurityProtocol(Protocol):
-    def create_jwt(self: Self, user: User, jwt_type: JwtType) -> RefreshJwt: ...
-    def decode_and_verify_jwt(self: Self,token: str) -> RefreshJwt | None: ...
+    def create_jwt(self: Self, user: User, jwt_type: JwtType) -> Token: ...
+    def decode_and_verify_jwt(self: Self, token: str) -> Token | None: ...
+
 
 class RefreshJwtUsecase:
     def __init__(
@@ -35,7 +38,8 @@ class RefreshJwtUsecase:
             refresh_jwt: str,
     ) -> RefreshJwtDto:
         refresh_jwt_entity = self.security.decode_and_verify_jwt(refresh_jwt)
-        if not refresh_jwt_entity:
+
+        if not refresh_jwt_entity or refresh_jwt_entity.type != JwtType.REFRESH:
             raise BaseError(
                 status_code=403,
                 detail="Invalid refresh token",

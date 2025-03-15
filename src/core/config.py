@@ -54,13 +54,13 @@ class DataBaseSettings(CustomSettings):
 
 
 class AuthBussinesSettings(CustomSettings):
-    MIN_USERNAME_LENGTH: int = 3
+    MIN_USERNAME_LENGTH: int = 7
 
-    MIN_PASSWORD_LENGTH: int = 3
-    REQUIRED_UPPER_SYM: bool = False
-    REQIRED_LOWER_SYM: bool = False
-    REQUIRED_SPEC_SYM: bool = False
-    REQUIRED_DIGIT: bool = False
+    MIN_PASSWORD_LENGTH: int = 7
+    REQUIRED_UPPER_SYM: bool = True
+    REQIRED_LOWER_SYM: bool = True
+    REQUIRED_SPEC_SYM: bool = True
+    REQUIRED_DIGIT: bool = True
 
     MAX_NUM_OF_REFRESH_JWT: int = 5
 
