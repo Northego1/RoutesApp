@@ -1,6 +1,6 @@
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Self
+from typing import Any, Self
 
 import bcrypt
 import jwt
@@ -11,7 +11,13 @@ from core.config import JwtType, settings
 
 
 class Security:
-    def create_jwt(self: Self, user: User, jwt_type: JwtType) -> Token:
+    def create_jwt(
+            self: Self,
+            user: User,
+            jwt_type: JwtType,
+            refresh_jti: uuid.UUID | None = None,
+            **kwargs: Any,
+    ) -> Token:
         """creating jwt token, extending jti, token_type, expire"""
         expire = settings.jwt.ACCESS_JWT_EXPIRE \
         if jwt_type == JwtType.ACCESS else settings.jwt.REFRESH_JWT_EXPIRE
@@ -25,6 +31,10 @@ class Security:
             "jti": str(jti),
             "exp": expire_at.timestamp(),
         }
+        if refresh_jti:
+            payload["refresh_jti"] = str(refresh_jti)
+        if kwargs:
+            payload.update(kwargs)
 
         token = jwt.encode(
             payload=payload,

@@ -13,9 +13,11 @@ class Token:
             token: str,
             token_expire: datetime,
             type: JwtType = JwtType.REFRESH,
+            refresh_jti: uuid.UUID | None = None,
     ) -> None:
         self.id = id
         self.user_id = user_id
         self.token = token
         self.token_expire = token_expire
         self.type = type
+        self.refresh_jti = refresh_jti

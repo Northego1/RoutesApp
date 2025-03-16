@@ -1,6 +1,7 @@
 from copy import copy
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import Mock
+import uuid
 
 from core.config import JwtType
 from tests.unit.test_auth.common import Mck
@@ -22,10 +23,16 @@ def decode_and_verify_jwt(token: str) -> "Token | None":
     if token == Mck.ent.refresh_token_domain.token:
         return Mck.ent.refresh_token_domain
     if token == Mck.ent.access_token_domain.token:
+        print(Mck.ent.access_token_domain.type)
         return Mck.ent.access_token_domain
     return None
 
-def create_jwt(user: "User", jwt_type: JwtType) -> "Token":
+def create_jwt(
+        user: "User",
+        jwt_type: JwtType,
+        refresh_jti: uuid.UUID | None = None,
+        **kwargs: Any,
+) -> "Token":
     match jwt_type:
         case JwtType.REFRESH:
             return copy(Mck.ent.refresh_token_domain)

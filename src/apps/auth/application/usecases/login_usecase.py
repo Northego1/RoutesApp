@@ -1,5 +1,5 @@
 import uuid
-from typing import Protocol, Self
+from typing import Any, Protocol, Self
 
 from apps.auth.application import protocols as proto
 from apps.auth.application.dto import UserLoginDto
@@ -26,7 +26,13 @@ class RepositoryProtocol(Protocol):
 
 
 class SecurityProtocol(Protocol):
-    def create_jwt(self: Self, user: User, jwt_type: str) -> Token: ...
+    def create_jwt(
+            self: Self,
+            user: User,
+            jwt_type: JwtType,
+            refresh_jti: uuid.UUID | None = None,
+            **kwargs: Any,
+    ) -> Token: ...
     def check_password(self: Self, correct_password: bytes, checkable_password: bytes) -> bool: ...
 
 
@@ -51,7 +57,8 @@ class LoginUsecase:
             creating tokens and returns dto with tokens
         """
         async with self.uow.transaction() as repo:
-            user = await repo.user_repository.get_user_by_username(username, with_tokens=True)
+            user = await repo.user_repository.get_user_by_username(
+                username, with_tokens=True)
 
             if not user:
                 raise BaseError(detail="UserNotFound", status_code=404)
@@ -68,7 +75,8 @@ class LoginUsecase:
             if not result:
                 raise BaseError(detail="UknownError", status_code=401)
 
-            access_jwt = self.security.create_jwt(user, jwt_type=JwtType.ACCESS)
+            access_jwt = self.security.create_jwt(
+                user, jwt_type=JwtType.ACCESS, refresh_jti=refresh_jwt.id)
 
             return UserLoginDto(
                 refresh_jwt=refresh_jwt.token,

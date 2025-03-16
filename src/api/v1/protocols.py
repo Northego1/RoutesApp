@@ -23,7 +23,7 @@ class LoginControllerProtocol(Protocol):
 
 
 class LogoutControllerProtocol(Protocol):
-    async def logout(self: Self) -> None: ...
+    async def logout(self: Self, request: Request) -> None: ...
 
 
 class RegisterControllerProtocol(Protocol):

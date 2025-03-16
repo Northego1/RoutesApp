@@ -1,18 +1,20 @@
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
 
 from container import Container
-from core.config import JwtType
 
 
 class RequestMock:
-    def __init__(self, token: str | None = None) -> None:
-        self.headers = {}
-        self.cookies = {}
-        if token:
-            self.cookies[JwtType.REFRESH.value] = token
+    def __init__(
+            self,
+            headers: dict[str, Any] | None = None,
+            cookies: dict[str, Any] | None = None,
+    ) -> None:
+        self.headers = headers if headers else {}
+        self.cookies = cookies if cookies else {}
+
 
 
 class ResponseMock:

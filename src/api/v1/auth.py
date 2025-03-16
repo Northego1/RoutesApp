@@ -64,9 +64,10 @@ async def get_user(
 @router.post("/logout", status_code=204)
 @inject
 async def logout(
+    request: Request,
     cl: proto.LogoutControllerProtocol = Depends(Provide[Container.presentation.logout]),
 ) -> None:
-    return await cl.logout()
+    return await cl.logout(request=request)
 
 
 @router.patch("/user/{user_id}/update", status_code=204)

@@ -16,6 +16,7 @@ class PresentationContainer(containers.DeclarativeContainer):
     )
     logout = providers.Factory(
         pres.LogoutController,
+        usecases.logout_usecase,
     )
     register = providers.Factory(
         pres.RegisterController,

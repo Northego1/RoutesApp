@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 
 from apps.auth.application.usecases.get_me_usecase import GetMeUsecase
 from apps.auth.application.usecases.login_usecase import LoginUsecase
+from apps.auth.application.usecases.logout_usecase import LogoutUsecase
 from apps.auth.application.usecases.refresh_jwt_usecase import RefreshJwtUsecase
 from apps.auth.application.usecases.register_usecase import RegisterUsecase
 from apps.auth.infrastructure.utils.security import Security
@@ -32,6 +33,12 @@ class UsecaseContainer(containers.DeclarativeContainer):
 
     get_me_usecase = providers.Factory(
         GetMeUsecase,
+        uow=uow,
+        security=security,
+    )
+
+    logout_usecase = providers.Factory(
+        LogoutUsecase,
         uow=uow,
         security=security,
     )

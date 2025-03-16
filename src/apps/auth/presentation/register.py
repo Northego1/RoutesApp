@@ -23,14 +23,14 @@ class RegisterController:
             register_request: RegisterRequest,
     ) -> ApiResponse[RegisterResponse, None]:
         try:
-            login_dto = await self.register_uc.execute(
+            register_dto = await self.register_uc.execute(
                 username=register_request.username,
                 password=register_request.password,
                 email=register_request.email,
             )
             response.set_cookie(
                 JwtType.REFRESH.value,
-                login_dto.refresh_jwt,
+                register_dto.refresh_jwt,
                 httponly=True,
                 samesite="strict",
                 max_age=settings.jwt.REFRESH_JWT_EXPIRE * 60,
@@ -38,8 +38,8 @@ class RegisterController:
             return ApiResponse(
                 status=Status.SUCCESS,
                 data=RegisterResponse(
-                    username=login_dto.username,
-                    access_jwt=login_dto.access_jwt,
+                    username=register_dto.username,
+                    access_jwt=register_dto.access_jwt,
                 ),
             )
         except BaseError as e:

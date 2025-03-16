@@ -5,7 +5,7 @@ from apps.auth.application import dto
 from apps.auth.domain.token import Token
 from apps.auth.domain.user import User
 from apps.auth.presentation.schemas import requests, responses
-from core.config import settings
+from core.config import JwtType, settings
 
 TEST_USER_UUID = uuid.UUID("41e56f2b-f355-41f7-b281-8b2cd4ca5454")
 TEST_USERNAME = "TestUserName"
@@ -13,13 +13,13 @@ TEST_PASSWORD = "TestPassword1!"
 TEST_EMAIL = "user@user.com"
 
 TEST_REFRESH_JWT_UUID = uuid.UUID("41e56f2f-f355-41f7-b281-8b2cd4ca5454")
-TEST_REFRESH_JWT = "refresh_token"
+TEST_REFRESH_JWT = JwtType.REFRESH.value
 TEST_REFRESH_EXPIRE = datetime.now(UTC) + timedelta(
     minutes=settings.jwt.REFRESH_JWT_EXPIRE,
 )
 
 TEST_ACCESS_JWT_UUID = uuid.UUID("42e56f2f-f355-41f7-b281-8b2cd4ca5454")
-TEST_ACCESS_JWT = "access_token"
+TEST_ACCESS_JWT = JwtType.ACCESS.value
 TEST_ACCESS_EXPIRE = datetime.now(UTC) + timedelta(
     minutes=settings.jwt.ACCESS_JWT_EXPIRE,
 )
@@ -38,6 +38,7 @@ class _Entites:
         id=TEST_REFRESH_JWT_UUID,
         user_id=TEST_USER_UUID,
         token=TEST_REFRESH_JWT,  # noqa: S106
+        type=JwtType.REFRESH,
         token_expire=TEST_REFRESH_EXPIRE,
     )
 
@@ -46,6 +47,8 @@ class _Entites:
         id=TEST_ACCESS_JWT_UUID,
         user_id=TEST_USER_UUID,
         token=TEST_ACCESS_JWT,  # noqa: S106
+        type=JwtType.ACCESS,
+        refresh_jti=TEST_REFRESH_JWT_UUID,
         token_expire=TEST_ACCESS_EXPIRE,
     )
 
@@ -69,6 +72,12 @@ class _Responses:
     register_response = responses.RegisterResponse(
         username=TEST_USERNAME, access_jwt=TEST_ACCESS_JWT)
 
+    getme_response = responses.GetMeResponse(
+        id=TEST_USER_UUID,
+        username=TEST_USERNAME,
+        email=TEST_EMAIL,
+    )
+
 
 class _Dto:
     login_dto = dto.UserLoginDto(
@@ -83,6 +92,12 @@ class _Dto:
     )
     refresh_dto = dto.RefreshJwtDto(
         access_jwt=TEST_ACCESS_JWT,
+    )
+    user_dto = dto.UserDto(
+        id=TEST_USER_UUID,
+        username=TEST_USERNAME,
+        email=TEST_EMAIL,
+        token_list=None,
     )
 
 

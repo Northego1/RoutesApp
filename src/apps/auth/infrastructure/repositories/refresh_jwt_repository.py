@@ -60,3 +60,21 @@ class RefreshJwtRepository:
         )
 
         return query.scalar()
+
+
+    async def delete(self: Self, refresh_jwt_jti: uuid.UUID) -> uuid.UUID | None:
+        query = await self.conn.execute(
+            text(
+                """
+                    DELETE FROM refresh_jwts
+                    WHERE id = :jti
+                    RETURNING id
+                """,
+            ),
+            {
+                "jti": refresh_jwt_jti,
+            },
+        )
+
+        return query.scalar()
+

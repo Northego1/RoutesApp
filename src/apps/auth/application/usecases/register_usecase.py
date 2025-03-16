@@ -25,7 +25,13 @@ class RepositoryProtocol(Protocol):
 
 
 class SecurityProtocol(Protocol):
-    def create_jwt(self: Self, user: User, jwt_type: str) -> Token: ...
+    def create_jwt(
+            self: Self,
+            user: User,
+            jwt_type: JwtType,
+            refresh_jti: uuid.UUID | None = None,
+            **kwargs: Any,
+    ) -> Token: ...
 
 
 class RegisterUsecase:
@@ -60,7 +66,8 @@ class RegisterUsecase:
             if not refresh_id:
                 raise BaseError("Unkown Error", status_code=401)
 
-            access_jwt = self.security.create_jwt(user=user, jwt_type=JwtType.ACCESS)
+            access_jwt = self.security.create_jwt(
+                user=user, jwt_type=JwtType.ACCESS, refresh_jti=refresh_jwt.id)
 
             return UserRegisterDto(
                 username=username,

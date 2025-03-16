@@ -3,11 +3,10 @@ from dependency_injector import providers
 from fastapi import HTTPException
 
 from apps.auth import presentation as present
-from apps.auth.presentation.schemas.responses import RefreshAccessJwtResponse
 from container import Container
 from core.config import JwtType
 from core.exceptions import BaseError
-from core.schema import ApiResponse, Status
+from core.schema import ApiResponse
 from tests.conftest import RequestMock
 from tests.unit.test_auth.common import Mck
 from tests.unit.test_auth.mocks import usecases as uc
@@ -18,17 +17,30 @@ from tests.unit.test_auth.mocks import usecases as uc
     ("request_", "expect", "exception"),
     [
         (
-            RequestMock(cookies={JwtType.REFRESH.value: Mck.ent.refresh_token_domain.token}),
-            ApiResponse(
-                status=Status.SUCCESS,
-                data=RefreshAccessJwtResponse(
-                    access_jwt=Mck.ent.access_token_domain.token,
-                ),
+            RequestMock(
+            headers={"Authorization": f"Bearer {Mck.ent.access_token_domain.token}"},
             ),
+            None,
             None,
         ),
         (
-            RequestMock(cookies={JwtType.REFRESH.value: "Invalid"}),
+            RequestMock(
+            cookies={JwtType.REFRESH.value: Mck.ent.refresh_token_domain.token},
+            ),
+            None,
+            None,
+        ),
+        (
+            RequestMock(
+            headers={"Authorization": f"Bearer {Mck.ent.refresh_token_domain.token}"},
+            ),
+            None,
+            HTTPException,
+        ),
+        (
+            RequestMock(
+            cookies={JwtType.REFRESH.value: Mck.ent.access_token_domain.token},
+            ),
             None,
             HTTPException,
         ),
@@ -38,30 +50,29 @@ from tests.unit.test_auth.mocks import usecases as uc
             HTTPException,
         ),
     ],
-
 )
-async def test_refresh(
+async def test_logout(
     request_: RequestMock,
     expect: ApiResponse | None,
     exception: type[BaseError] | None,
     container: Container,
 ) -> None:
-    container.presentation.refresh_jwt.override(
+    container.presentation.logout.override(
         providers.Factory(
-            present.RefreshController,
-            refresh_jwt_usecase=uc.refresh_usecase_mock,
+            present.LogoutController,
+            logout_usecase=uc.logout_usecase_mock,
         ),
     )
-    refresh_controller: present.RefreshController = container.presentation.refresh_jwt()
+    logout_controller: present.LogoutController = container.presentation.logout()
 
 
     if exception:
         with pytest.raises(exception):
-            await refresh_controller.refresh(
+            await logout_controller.logout(
             request=request_, # type: ignore
         )
     else:
-        resp = await refresh_controller.refresh(
+        resp = await logout_controller.logout(
             request=request_, # type: ignore
         )
         assert resp == expect

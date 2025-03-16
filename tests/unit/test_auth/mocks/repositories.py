@@ -43,7 +43,17 @@ user_repository_mock.get_user_by_username = AsyncMock(side_effect=get_user_effec
 user_repository_mock.create_user = AsyncMock(side_effect=create_user_effect)
 
 
+def delete_effect(refresh_jwt_jti: uuid.UUID) -> uuid.UUID | None:
+    print(Mck.ent.refresh_token_domain.id)
+    if refresh_jwt_jti != Mck.ent.refresh_token_domain.id:
+        return None
+    return Mck.ent.refresh_token_domain.id
+
+
 refresh_jwt_repository_mock.update = AsyncMock(
     return_value=copy(Mck.ent.refresh_token_domain.id))
 refresh_jwt_repository_mock.insert = AsyncMock(
     return_value=copy(Mck.ent.refresh_token_domain.id))
+refresh_jwt_repository_mock.delete = AsyncMock(
+    side_effect=delete_effect,
+)

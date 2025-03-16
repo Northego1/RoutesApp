@@ -3,7 +3,7 @@ from dependency_injector import providers
 from fastapi import HTTPException
 
 from apps.auth import presentation as present
-from apps.auth.presentation.schemas.responses import RefreshAccessJwtResponse
+from apps.auth.presentation.schemas.requests import LoginRequest
 from container import Container
 from core.config import JwtType
 from core.exceptions import BaseError
@@ -18,50 +18,57 @@ from tests.unit.test_auth.mocks import usecases as uc
     ("request_", "expect", "exception"),
     [
         (
-            RequestMock(cookies={JwtType.REFRESH.value: Mck.ent.refresh_token_domain.token}),
+            RequestMock(headers={"Authorization": f"Bearer {Mck.ent.access_token_domain.token}"}),
             ApiResponse(
                 status=Status.SUCCESS,
-                data=RefreshAccessJwtResponse(
-                    access_jwt=Mck.ent.access_token_domain.token,
-                ),
+                data=Mck.resp.getme_response,
             ),
             None,
-        ),
-        (
-            RequestMock(cookies={JwtType.REFRESH.value: "Invalid"}),
-            None,
-            HTTPException,
         ),
         (
             RequestMock(),
             None,
             HTTPException,
         ),
+        (
+            RequestMock(headers={"Authorization": "H s ms msms  s"}),
+            None,
+            HTTPException,
+        ),
+        (
+            RequestMock(headers={"Authorization": "W"}),
+            None,
+            HTTPException,
+        ),
+        (
+            RequestMock(headers={"Authorization": f"Bearer {Mck.ent.refresh_token_domain.token}"}),
+            None,
+            HTTPException,
+        ),
     ],
-
 )
-async def test_refresh(
+async def test_login(
     request_: RequestMock,
     expect: ApiResponse | None,
     exception: type[BaseError] | None,
     container: Container,
 ) -> None:
-    container.presentation.refresh_jwt.override(
+    container.presentation.get_me.override(
         providers.Factory(
-            present.RefreshController,
-            refresh_jwt_usecase=uc.refresh_usecase_mock,
+            present.GetMeController,
+            get_user_usecase=uc.getme_usecase_mock,
         ),
     )
-    refresh_controller: present.RefreshController = container.presentation.refresh_jwt()
+    get_me: present.GetMeController = container.presentation.get_me()
 
 
     if exception:
         with pytest.raises(exception):
-            await refresh_controller.refresh(
+            await get_me.get_me(
             request=request_, # type: ignore
         )
     else:
-        resp = await refresh_controller.refresh(
+        resp = await get_me.get_me(
             request=request_, # type: ignore
         )
         assert resp == expect
