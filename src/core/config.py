@@ -1,10 +1,16 @@
 from enum import Enum
 from pathlib import Path
-from typing import Self
+from typing import Annotated, Self
 
+from pydantic import conint
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+class ApiAccessType(str, Enum):
+    PUBLIC = "/public"
+    PROTECTED = "/protected"
 
 
 class JwtType(str, Enum):
@@ -54,22 +60,39 @@ class DataBaseSettings(CustomSettings):
 
 
 class AuthBussinesSettings(CustomSettings):
-    MIN_USERNAME_LENGTH: int = 7
+    MIN_USERNAME_LENGTH: Annotated[int, conint(ge=4)] = 7
 
-    MIN_PASSWORD_LENGTH: int = 7
+    MIN_PASSWORD_LENGTH: Annotated[int, conint(ge=4)] = 7
     REQUIRED_UPPER_SYM: bool = True
     REQIRED_LOWER_SYM: bool = True
     REQUIRED_SPEC_SYM: bool = True
     REQUIRED_DIGIT: bool = True
 
-    MAX_NUM_OF_REFRESH_JWT: int = 5
+    USER_REFRESH_JWT_LIMIT: int = 5
 
+
+class GateWay(CustomSettings):
+    VALHALLA_HOST: str = "VALHALLA_HOST"
+    VALHALLA_PORT: str = "VALHALLA_PORT"
+    overpass_request_url: str = "http://overpass-api.de/api/interpreter"
+
+
+    def nominatim_request_url(self: Self, address: str) -> str:
+        return f"https://nominatim.openstreetmap.org/search?q={address}&format=json"
+
+
+    @property
+    def valhalla_request_url(self: Self) -> str:
+        return (
+            f"http://{self.VALHALLA_HOST}:{self.VALHALLA_PORT}/route"
+        )
 
 class Settings:
     def __init__(self: Self) -> None:
         self.db = DataBaseSettings()
         self.auth = AuthBussinesSettings()
         self.jwt = JwtSettings()
+        self.gateway = GateWay()
 
 
 settings = Settings()

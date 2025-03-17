@@ -40,7 +40,7 @@ class User:
         """
         if self.token_list is None:
             raise UserDomainError("token list is None")
-        if len(self.token_list) >= st.auth.MAX_NUM_OF_REFRESH_JWT:
+        if len(self.token_list) >= st.auth.USER_REFRESH_JWT_LIMIT:
             older_token = min(self.token_list, key=lambda tok: tok.token_expire)
             self.token_list[self.token_list.index(older_token)] = token
             return older_token

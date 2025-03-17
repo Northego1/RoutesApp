@@ -6,7 +6,7 @@ from core.container import InfrastructureContainer
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(packages=["api.v1"])
+    wiring_config = containers.WiringConfiguration(packages=["api.v1", "core.middlewares"])
 
     infrastructure = providers.Container(InfrastructureContainer)
 

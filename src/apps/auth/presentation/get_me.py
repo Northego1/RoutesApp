@@ -17,8 +17,8 @@ class GetMeController:
         self.get_user_uc = get_user_usecase
 
 
-    async def get_me(self: Self, request: Request,
-    ) -> ApiResponse[GetMeResponse, None]:
+    async def get_me(self: Self, request: Request, api_response: bool = True,
+    ) -> ApiResponse[GetMeResponse, None] | GetMeResponse:
         try:
             token_header = request.headers.get("Authorization")
             if not token_header:
@@ -34,14 +34,19 @@ class GetMeController:
                 )
             token = token[1]
             user_dto = await self.get_user_uc.execute(token)
-            return ApiResponse(
-                status=Status.SUCCESS,
-                data=GetMeResponse(
+
+            resp_data = GetMeResponse(
                     id=user_dto.id,
                     email=user_dto.email,
                     username=user_dto.username,
-                ),
-            )
+                )
+            if api_response:
+                return ApiResponse(
+                    status=Status.SUCCESS,
+                    data=resp_data,
+                )
+            return resp_data
+
         except BaseError as e:
             raise HTTPException(  # noqa: B904
                 status_code=e.status_code,

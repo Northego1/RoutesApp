@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from api.v1 import router
 from container import Container
 from core import schema
+from core.middlewares.protected_middleware import ProtectedMiddleware
 
 
 def create_container() -> Container:
@@ -19,6 +20,8 @@ def create_app() -> FastAPI:
         },
     )
     app.include_router(router)
+
+    app.add_middleware(ProtectedMiddleware)
     app.state.container = create_container()
     return app
 
@@ -36,7 +39,7 @@ async def handle_validation_error(
         content=schema.ApiResponse(
             status=schema.Status.FAILURE,
             detail=exc.errors(),
-        ),
+        ).model_dump(),
     )
 
 
